@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Registro Prestamos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="p-4">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2>Registro Prestamos</h2>
+      <div>
+        <a href="index.html" class="btn btn-primary">Inicio</a>
+        <a href="pagos.html" class="btn btn-success">Pagos</a>
+      </div>
+    </div>
+
+    <!-- franja naranja como en la imagen -->
+    <div class="bg-warning text-dark p-2 rounded mb-3" style="font-size:20px;">Registro Prestamos</div>
+
+    <form id="form-prestamo" class="mb-3">
+      <input type="hidden" id="idprestamo">
+
+      <div class="row g-2 mb-2">
+        <div class="col-md-6">
+          <select id="selectCliente" class="form-select" required>
+            <option value="">Seleccione Cliente</option>
+            <!-- se llena desde JS -->
+          </select>
+        </div>
+        <div class="col-md-6">
+          <input type="number" id="montoPrestado" class="form-control" placeholder="Monto_Prestado" required>
+        </div>
+      </div>
+
+      <div class="row g-2 mb-2">
+        <div class="col-md-12">
+          <input type="date" id="fechaPrestamo" class="form-control" placeholder="Fecha Prestamo" required>
+        </div>
+      </div>
+
+      <div class="row g-2 mb-3">
+        <div class="col-md-4">
+          <button type="button" id="btnBuscarDNI" class="btn btn-outline-secondary w-100">Buscar por DNI</button>
+        </div>
+        <div class="col-md-4">
+          <button type="button" id="btnLetraPDF" class="btn btn-outline-secondary w-100">Letra de Cambio PDF</button>
+        </div>
+        <div class="col-md-4 d-flex gap-2 justify-content-end">
+          <button type="submit" id="btnGuardar" class="btn btn-primary">Registrar</button>
+          <button type="button" id="btnCancelar" class="btn btn-success">Cancelar</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- tabla con columnas: ID | Cliente | Monto Prestado | Saldo Pendiente | Fecha Prestamo | Acciones -->
+    <div class="table-responsive">
+      <table class="table table-bordered text-center">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Monto Prestado</th>
+            <th>Saldo Pendiente</th>
+            <th>Fecha Préstamo</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-prestamos"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="js/prestamo.js"></script>
+</body>
+</html>
