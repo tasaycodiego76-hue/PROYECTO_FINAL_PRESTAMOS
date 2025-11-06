@@ -40,16 +40,16 @@ exports.actualizarPrestamo = async (req, res) => {
 // Listar préstamos con nombre del cliente
 exports.obtenerPrestamos = async (req, res) => {
   const sql = `
-    SELECT p.id, c.nombre AS cliente, p.montoPrestado, p.saldoPendiente, p.fechaPrestamo
+    SELECT p.id, p.clienteId, c.nombre AS cliente, p.montoPrestado, p.saldoPendiente, p.fechaPrestamo
     FROM prestamos p
     INNER JOIN clientes c ON p.clienteId = c.id
     ORDER BY p.id DESC
-  `
+  `;
   try {
-    const [prestamos] = await db.query(sql)
-    res.status(200).json(prestamos)
+    const [prestamos] = await db.query(sql);
+    res.status(200).json(prestamos);
   } catch (e) {
-    console.error(e)
-    res.status(500).json({ mensaje: 'Error al obtener préstamos' })
+    console.error(e);
+    res.status(500).json({ mensaje: 'Error al obtener préstamos' });
   }
-}
+};
