@@ -18,8 +18,6 @@ app.use(cors({
   credentials: true
 }))
 
-// Crear carpeta uploads si no existe
-fs.mkdir('./public/uploads', { recursive: true })
 
 // Middleware
 app.use(express.json())

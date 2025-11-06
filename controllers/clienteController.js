@@ -22,6 +22,7 @@ exports.crearCliente = async (req, res) => {
   }
 }
 
+//Actualziar Cliente
 exports.actualizarCliente = async (req, res) => {
   const { id } = req.params
   const { nombre, email, telefono } = req.body
