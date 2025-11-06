@@ -8,16 +8,32 @@
 </head>
 <body class="p-4">
   <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2>Registrar Pagos</h2>
-      <div>
-        <a href="index.html" class="btn btn-primary">Inicio</a>
-        <a href="prestamos.html" class="btn btn-warning">Préstamos</a>
+    <!-- Título principal -->
+    <h2 class="mb-4">Sistema de Préstamos Pymes</h2>
+
+    <!-- Navegación con botones grandes -->
+    <div class="row mb-4 g-3">
+      <div class="col-md-4">
+        <a href="index.html" class="btn btn-primary w-100 py-3" style="font-size: 1.1rem;">
+          👥 Clientes
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="prestamos.html" class="btn btn-warning w-100 py-3" style="font-size: 1.1rem;">
+          💰 Préstamos
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="pagos.html" class="btn btn-success w-100 py-3" style="font-size: 1.1rem;">
+          💳 Pagos
+        </a>
       </div>
     </div>
 
+    <!-- Título de sección -->
     <div class="bg-success text-white p-2 rounded mb-3" style="font-size:20px;">Registrar Pagos</div>
 
+    <!-- Formulario -->
     <form id="form-pago" class="mb-3">
       <input type="hidden" id="idpago">
 
@@ -49,6 +65,7 @@
         </div>
       </div>
 
+      
       <div class="row g-2 mb-3">
         <div class="col-md-12 d-flex gap-2 justify-content-end">  
           <button type="submit" id="btnGuardar" class="btn" style="background: #FFD800;">Guardar</button>
@@ -57,7 +74,7 @@
       </div>
     </form>
 
-    <!-- tabla: ID | Cliente | Monto Prestamo | Monto Pagado | Fecha Pago | Método | Acciones -->
+    <!-- Tabla -->
     <div class="table-responsive">
       <table class="table table-bordered text-center">
         <thead class="table-light">
@@ -74,6 +91,7 @@
         <tbody id="tabla-pagos"></tbody>
       </table>
     </div>
+
   </div>
 
   <script src="js/pago.js"></script>

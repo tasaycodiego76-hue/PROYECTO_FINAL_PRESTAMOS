@@ -54,17 +54,28 @@ exports.obtenerClientes = async (req, res) => {
 
 // Eliminar cliente
 exports.eliminarCliente = async (req, res) => {
-  const { id } = req.params
-  const sql = 'DELETE FROM clientes WHERE id = ?'
+  const { id } = req.params;
 
   try {
-    const [result] = await db.query(sql, [id])
+    // Eliminar pagos asociados a los préstamos del cliente
+    await db.query(
+      'DELETE FROM pagos WHERE prestamoId IN (SELECT id FROM prestamos WHERE clienteId = ?)',
+      [id]
+    );
+
+    //  Eliminar préstamos asociados al cliente
+    await db.query('DELETE FROM prestamos WHERE clienteId = ?', [id]);
+
+    // Finalmente eliminar al cliente
+    const [result] = await db.query('DELETE FROM clientes WHERE id = ?', [id]);
+
     if (result.affectedRows === 0) {
-      return res.status(404).json({ mensaje: 'Cliente no encontrado' })
+      return res.status(404).json({ mensaje: 'Cliente no encontrado' });
     }
-    res.status(200).json({ mensaje: 'Cliente eliminado correctamente' })
+
+    res.status(200).json({ mensaje: 'Cliente eliminado correctamente junto con sus préstamos y pagos' });
   } catch (e) {
-    console.error(e)
-    res.status(500).json({ mensaje: 'Error al eliminar cliente' })
+    console.error(e);
+    res.status(500).json({ mensaje: 'Error al eliminar cliente' });
   }
-}
+};

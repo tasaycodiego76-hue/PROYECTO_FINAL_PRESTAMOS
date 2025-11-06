@@ -8,16 +8,32 @@
 </head>
 <body class="p-4">
   <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2>Registro de Préstamos</h2>
-      <div>
-        <a href="index.html" class="btn btn-primary">Inicio</a>
-        <a href="pagos.html" class="btn btn-success">Pagos</a>
+    <!-- Título principal -->
+    <h2 class="mb-4">Sistema de Préstamos Pymes</h2>
+
+    <!-- Navegación con botones grandes -->
+    <div class="row mb-4 g-3">
+      <div class="col-md-4">
+        <a href="index.html" class="btn btn-primary w-100 py-3" style="font-size: 1.1rem;">
+          👥 Clientes
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="prestamos.html" class="btn btn-warning w-100 py-3" style="font-size: 1.1rem;">
+          💰 Préstamos
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="pagos.html" class="btn btn-success w-100 py-3" style="font-size: 1.1rem;">
+          💳 Pagos
+        </a>
       </div>
     </div>
 
+    <!-- Título de sección -->
     <div class="bg-warning text-dark p-2 rounded mb-3" style="font-size:20px;">Registro de Préstamos</div>
 
+    <!-- Formulario -->
     <form id="form-prestamo" class="mb-3">
       <input type="hidden" id="idprestamo">
 
@@ -51,6 +67,7 @@
       </div>
     </form>
 
+    <!-- Tabla -->
     <div class="table-responsive">
       <table class="table table-bordered text-center">
         <thead class="table-light">
@@ -66,6 +83,7 @@
         <tbody id="tabla-prestamos"></tbody>
       </table>
     </div>
+
   </div>
 
   <script src="js/prestamo.js"></script>

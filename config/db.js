@@ -15,5 +15,4 @@ const pool = mysql.createPool({
   port: process.env.DB_PORT
 })
 
-//Aprovechar el recurso en otra parte de la App
 module.exports = pool

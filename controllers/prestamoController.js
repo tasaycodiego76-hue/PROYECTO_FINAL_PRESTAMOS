@@ -1,24 +1,39 @@
 const db = require('../config/db')
 
-// Crear préstamo
+// Crear préstamo con interés
 exports.crearPrestamo = async (req, res) => {
-  const { clienteId, montoPrestado, saldoPendiente, fechaPrestamo } = req.body
+  const { clienteId, montoPrestado, fechaPrestamo } = req.body
 
+  // Validación básica
   if (!clienteId || !montoPrestado || !fechaPrestamo) {
     return res.status(400).json({ mensaje: 'Faltan datos obligatorios' })
   }
 
-  const sql = "INSERT INTO prestamos (clienteId, montoPrestado, saldoPendiente, fechaPrestamo) VALUES (?,?,?,?)"
-
   try {
+    const interes = 10 // 10%
+
+    // Calcula saldo pendiente con interés
+    const saldoPendiente = montoPrestado + (montoPrestado * interes / 100)
+
+    // Inserta préstamo
+    const sql = `
+      INSERT INTO prestamos (clienteId, montoPrestado, saldoPendiente, fechaPrestamo)
+      VALUES (?, ?, ?, ?)
+    `
     const [result] = await db.query(sql, [clienteId, montoPrestado, saldoPendiente, fechaPrestamo])
-    res.status(201).json({ id: result.insertId, mensaje: 'Préstamo registrado correctamente' })
+
+    res.status(201).json({
+      id: result.insertId,
+      mensaje: `Préstamo registrado con ${interes}% de interés`,
+      saldoPendiente
+    })
   } catch (e) {
     console.error(e)
     res.status(500).json({ mensaje: 'Error al registrar préstamo' })
   }
 }
 
+// Actualizar préstamo
 exports.actualizarPrestamo = async (req, res) => {
   const { id } = req.params
   const { clienteId, montoPrestado, fechaPrestamo } = req.body
@@ -38,7 +53,6 @@ exports.actualizarPrestamo = async (req, res) => {
 }
 
 // Listar préstamos con nombre del cliente
-// Listar préstamos (simple, muestra el nombre del cliente)
 exports.obtenerPrestamos = async (req, res) => {
   try {
     const sql = `
@@ -54,4 +68,4 @@ exports.obtenerPrestamos = async (req, res) => {
     console.error(e)
     res.status(500).json({ mensaje: 'Error al obtener los préstamos' })
   }
-};
+}
