@@ -8,6 +8,7 @@ const selectPrestamo = document.getElementById('selectPrestamo');
 const montoPago = document.getElementById('montoPago');
 const fechaPago = document.getElementById('fechaPago');
 const metodoPago = document.getElementById('metodoPago');
+const pdfPago = document.getElementById('pdfPago'); 
 const btnGuardar = document.getElementById('btnGuardar');
 const btnCancelar = document.getElementById('btnCancelar');
 
@@ -30,7 +31,7 @@ async function cargarPrestamos() {
   });
 }
 
-// Obtener y renderizar pagos
+// Mostrar pagos en la tabla
 async function obtenerPagos() {
   const res = await fetch(API_PAGOS);
   const pagos = await res.json();
@@ -45,8 +46,19 @@ async function obtenerPagos() {
     row.insertCell().textContent = p.fechaPago.split('T')[0];
     row.insertCell().textContent = p.metodoPago;
 
-    const actions = row.insertCell();
+    // PDF
+    const pdfCell = row.insertCell();
+    if (p.pdfPago) {
+      const link = document.createElement('a');
+      link.href = `uploads/${p.pdfPago}`;
+      link.target = '_blank';
+      link.textContent = 'Ver PDF';
+      pdfCell.appendChild(link);
+    } else {
+      pdfCell.textContent = '-';
+    }
 
+    const actions = row.insertCell();
     const editBtn = document.createElement('button');
     editBtn.textContent = 'Editar';
     editBtn.classList.add('btn', 'btn-info', 'btn-sm');
@@ -71,6 +83,7 @@ function cargarParaEdicion(p) {
   btnGuardar.innerText = 'Actualizar';
 }
 
+// Eliminar pago
 async function eliminarPago(id, cliente) {
   if (confirm(`¿Seguro que desea eliminar el pago de ${cliente}?`)) {
     await fetch(`${API_PAGOS}/${id}`, { method: 'DELETE' });
@@ -79,24 +92,25 @@ async function eliminarPago(id, cliente) {
   }
 }
 
+// Guardar o actualizar pago
 formulario.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const data = {
-    prestamoId: selectPrestamo.value,
-    montoPagado: parseFloat(montoPago.value),
-    fechaPago: fechaPago.value,
-    metodoPago: metodoPago.value
-  };
+  const data = new FormData();
+  data.append('prestamoId', selectPrestamo.value);
+  data.append('montoPagado', montoPago.value);
+  data.append('fechaPago', fechaPago.value);
+  data.append('metodoPago', metodoPago.value);
+
+  if (pdfPago.files[0]) data.append('pdfPago', pdfPago.files[0]);
 
   const id = idpago.value;
-  const method = id ? 'PUT' : 'POST';
   const url = id ? `${API_PAGOS}/${id}` : API_PAGOS;
+  const method = id ? 'PUT' : 'POST';
 
   await fetch(url, {
     method,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
+    body: data
   });
 
   formulario.reset();
@@ -110,3 +124,4 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarPrestamos();
   obtenerPagos();
 });
+

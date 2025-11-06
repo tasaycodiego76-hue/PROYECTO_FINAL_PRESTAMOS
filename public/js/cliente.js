@@ -8,6 +8,8 @@ const email = document.getElementById('email');
 const telefono = document.getElementById('telefono');
 const btnGuardar = document.getElementById('btnGuardar');
 const btnCancelar = document.getElementById('btnCancelar');
+const inputBuscar = document.getElementById('buscarCliente');
+const tablaClientes = document.getElementById('tabla-clientes'); 
 
 btnCancelar.addEventListener('click', () => {
   btnGuardar.innerText = 'Registrar';
@@ -96,6 +98,16 @@ formulario.addEventListener('submit', async (e) => {
     obtenerClientes();
   } catch (error) {
     console.error('Error al guardar cliente:', error);
+  }
+});
+
+inputBuscar.addEventListener('input', () => {
+  const texto = inputBuscar.value.toLowerCase();
+  const filas = tablaClientes.getElementsByTagName('tr');
+
+  for (let fila of filas) {
+    const nombre = fila.cells[1].textContent.toLowerCase(); // suponiendo que el nombre está en la 2da columna
+    fila.style.display = nombre.includes(texto) ? '' : 'none';
   }
 });
 

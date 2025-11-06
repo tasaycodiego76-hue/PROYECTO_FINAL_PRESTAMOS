@@ -34,7 +34,8 @@
     <div class="bg-success text-white p-2 rounded mb-3" style="font-size:20px;">Registrar Pagos</div>
 
     <!-- Formulario -->
-    <form id="form-pago" class="mb-3">
+    <form id="form-pago" class="mb-3" enctype="multipart/form-data"
+>
       <input type="hidden" id="idpago">
 
       <div class="row g-2 mb-2">
@@ -64,6 +65,9 @@
           </select>
         </div>
       </div>
+<div class="col-md-6">
+  <input type="file" id="pdfPago" class="form-control" accept="application/pdf">
+</div>
 
       
       <div class="row g-2 mb-3">
@@ -77,18 +81,20 @@
     <!-- Tabla -->
     <div class="table-responsive">
       <table class="table table-bordered text-center">
-        <thead class="table-light">
-          <tr>
-            <th>ID</th>
-            <th>Cliente</th>
-            <th>Monto Préstamo</th>
-            <th>Monto Pagado</th>
-            <th>Fecha Pago</th>
-            <th>Método</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-pagos"></tbody>
+<thead class="table-light">
+  <tr>
+    <th>ID</th>
+    <th>Cliente</th>
+    <th>Monto Préstamo</th>
+    <th>Monto Pagado</th>
+    <th>Fecha Pago</th>
+    <th>Método</th>
+    <th>PDF</th> <!-- nueva columna -->
+    <th>Acciones</th>
+  </tr>
+</thead>
+<tbody id="tabla-pagos"></tbody>
+
       </table>
     </div>
 

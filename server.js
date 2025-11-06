@@ -17,6 +17,11 @@ app.use(cors({
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true
 }))
+// Servir carpeta uploads de forma pública
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
+
 
 
 // Middleware
