@@ -19,6 +19,24 @@ exports.crearPrestamo = async (req, res) => {
   }
 }
 
+exports.actualizarPrestamo = async (req, res) => {
+  const { id } = req.params
+  const { clienteId, montoPrestado, fechaPrestamo } = req.body
+  
+  const sql = 'UPDATE prestamos SET clienteId = ?, montoPrestado = ?, fechaPrestamo = ? WHERE id = ?'
+  
+  try {
+    const [result] = await db.query(sql, [clienteId, montoPrestado, fechaPrestamo, id])
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ mensaje: 'Préstamo no encontrado' })
+    }
+    res.status(200).json({ mensaje: 'Préstamo actualizado correctamente' })
+  } catch (e) {
+    console.error(e)
+    res.status(500).json({ mensaje: 'Error al actualizar préstamo' })
+  }
+}
+
 // Listar préstamos con nombre del cliente
 exports.obtenerPrestamos = async (req, res) => {
   const sql = `
