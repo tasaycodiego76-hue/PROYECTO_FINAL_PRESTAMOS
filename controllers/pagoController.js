@@ -24,18 +24,20 @@ exports.crearPago = async (req, res) => {
 
 // Listar pagos
 exports.obtenerPagos = async (req, res) => {
-  const sql = `
-    SELECT pa.id, c.nombre AS cliente, pr.montoPrestado, pa.montoPagado, pa.fechaPago, pa.metodoPago
-    FROM pagos pa
-    INNER JOIN prestamos pr ON pa.prestamoId = pr.id
-    INNER JOIN clientes c ON pr.clienteId = c.id
-    ORDER BY pa.id DESC
-  `
   try {
+    const sql = `
+      SELECT 
+        pa.*, 
+        (SELECT nombre FROM clientes WHERE id = (SELECT clienteId FROM prestamos WHERE id = pa.prestamoId)) AS cliente,
+        (SELECT montoPrestado FROM prestamos WHERE id = pa.prestamoId) AS montoPrestado
+      FROM pagos pa
+      ORDER BY pa.id DESC
+    `
     const [pagos] = await db.query(sql)
     res.status(200).json(pagos)
   } catch (e) {
     console.error(e)
-    res.status(500).json({ mensaje: 'Error al obtener pagos' })
+    res.status(500).json({ mensaje: 'Error al obtener los pagos' })
   }
 }
+

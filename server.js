@@ -22,7 +22,6 @@ app.use(cors({
 // Middleware
 app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public')))
-app.use(express.urlencoded({ extended: true }))
 
 // Rutas de frontend
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')))
