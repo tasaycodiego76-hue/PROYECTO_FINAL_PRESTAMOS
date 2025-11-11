@@ -20,28 +20,53 @@ btnCancelar.addEventListener('click', () => {
 
 // Mostrar historial de préstamos del cliente
 btnHistorial.addEventListener('click', async () => {
-  if (!selectCliente.value) return alert('Seleccione un cliente primero.')
-  const clienteId = selectCliente.value
+  const clienteId = selectCliente.value;
+  const historialContainer = document.getElementById('historial-container');
+  const historialContent = document.getElementById('historial-content');
+
+  if (!clienteId) {
+    Swal.fire({
+      icon: "warning",
+      title: "Seleccione un cliente primero",
+      showConfirmButton: false,
+      timer: 1500
+    });
+    return;
+  }
 
   try {
-    const response = await fetch(API_PRESTAMOS)
-    const prestamos = await response.json()
-    // Fix: Usa comparación estricta y convierte clienteId a número
-    const historial = prestamos.filter(p => p.clienteId === parseInt(clienteId))
+    const response = await fetch(API_PRESTAMOS);
+    const prestamos = await response.json();
+
+    // Filtra solo los préstamos del cliente
+    const historial = prestamos.filter(p => p.clienteId === parseInt(clienteId));
+
+    historialContent.innerHTML = "";
+    historialContainer.style.display = "block";
 
     if (historial.length === 0) {
-      alert('Este cliente no tiene historial de préstamos.')
-    } else {
-      let texto = 'Historial de Préstamos:\n\n'
-      historial.forEach(p => {
-        texto += `• Monto: ${p.montoPrestado} | Fecha: ${p.fechaPrestamo.split('T')[0]} | Saldo: ${p.saldoPendiente}\n`
-      })
-      alert(texto)
+      historialContent.innerHTML = `<p class="text-muted">Este cliente no tiene préstamos registrados.</p>`;
+      return;
     }
+
+    historial.forEach(p => {
+      const fecha = p.fechaPrestamo ? p.fechaPrestamo.split('T')[0] : 'Sin fecha';
+      const estado = p.saldoPendiente > 0 ? '🟠 Pendiente' : '🟢 Pagado';
+      const item = `
+        <div class="mb-2 p-2 border-bottom">
+          <strong>💰 Monto:</strong> S/ ${p.montoPrestado}<br>
+          <strong>📅 Fecha:</strong> ${fecha}<br>
+          <strong>💵 Saldo:</strong> S/ ${p.saldoPendiente}<br>
+          <strong>📌 Estado:</strong> ${estado}
+        </div>
+      `;
+      historialContent.innerHTML += item;
+    });
   } catch (e) {
-    console.error('Error al obtener historial:', e)
+    console.error("Error al cargar historial:", e);
   }
-})
+});
+
 
 // Cargar lista de clientes
 async function cargarClientes() {
@@ -110,35 +135,72 @@ async function eliminarPrestamo(id, cliente) {
 
 // Registrar o actualizar préstamo
 formulario.addEventListener('submit', async (event) => {
-  event.preventDefault()
+  event.preventDefault();
 
   const data = {
     clienteId: selectCliente.value,
     montoPrestado: parseFloat(montoPrestado.value),
     saldoPendiente: parseFloat(montoPrestado.value),
     fechaPrestamo: fechaPrestamo.value
-  }
+  };
 
-  let response
-  if (idprestamo.value === '') {
-    response = await fetch(API_PRESTAMOS, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
-  } else {
-    response = await fetch(`${API_PRESTAMOS}/${idprestamo.value}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
-  }
+  try {
+    let response;
+    if (idprestamo.value === '') {
+      // Crear nuevo préstamo
+      response = await fetch(API_PRESTAMOS, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    } else {
+      // Actualizar préstamo existente
+      response = await fetch(`${API_PRESTAMOS}/${idprestamo.value}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    }
 
-  await response.json()
-  formulario.reset()
-  btnGuardar.innerText = 'Registrar'
-  obtenerPrestamos()
-})
+    const dataRes = await response.json();
+
+    if (!response.ok) {
+      // Error -> SweetAlert2 (advertencia)
+      Swal.fire({
+        icon: 'error',
+        title: 'No permitido',
+        text: dataRes.mensaje || 'No se puede registrar el préstamo. Verifique.',
+        confirmButtonColor: '#d33'
+      });
+      return;
+    }
+
+    // Éxito -> SweetAlert2 (breve y automático)
+    Swal.fire({
+      icon: 'success',
+      title: '¡Listo!',
+      text: 'Préstamo registrado correctamente',
+      timer: 1400,
+      showConfirmButton: false
+    });
+
+    // Limpieza y recarga
+    formulario.reset();
+    btnGuardar.innerText = 'Registrar';
+    obtenerPrestamos();
+
+  } catch (error) {
+    console.error(error);
+    // Error de conexión u otro -> SweetAlert2
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No se pudo conectar con el servidor.',
+      footer: 'Revisa que el servidor esté en funcionamiento'
+    });
+  }
+});
+
 
 // Cargar al iniciar
 document.addEventListener('DOMContentLoaded', () => {

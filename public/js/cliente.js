@@ -1,3 +1,4 @@
+// === CONFIGURACIÓN ===
 const API_URL = 'http://localhost:3000/api/clientes';
 
 const formulario = document.getElementById('form-cliente');
@@ -11,13 +12,14 @@ const btnCancelar = document.getElementById('btnCancelar');
 const inputBuscar = document.getElementById('buscarCliente');
 const tablaClientes = document.getElementById('tabla-clientes'); 
 
+// === BOTÓN CANCELAR ===
 btnCancelar.addEventListener('click', () => {
   btnGuardar.innerText = 'Registrar';
   formulario.reset();
   idcliente.value = '';
 });
 
-// Obtener y renderizar clientes
+// === OBTENER Y RENDERIZAR CLIENTES ===
 async function obtenerClientes() {
   try {
     const response = await fetch(API_URL);
@@ -51,7 +53,7 @@ async function obtenerClientes() {
   }
 }
 
-// Cargar cliente para editar
+// === CARGAR CLIENTE PARA EDICIÓN ===
 function cargarParaEdicion(clienteObj) {
   idcliente.value = clienteObj.id;
   nombre.value = clienteObj.nombre;
@@ -60,19 +62,43 @@ function cargarParaEdicion(clienteObj) {
   btnGuardar.innerText = 'Actualizar';
 }
 
-// Eliminar cliente
+// === ELIMINAR CLIENTE CON CONFIRMACIÓN ===
 async function eliminarCliente(id, nombreCliente) {
-  if (confirm(`¿Seguro que deseas eliminar a: ${nombreCliente}?`)) {
+  const confirmacion = await Swal.fire({
+    title: `¿Eliminar a ${nombreCliente}?`,
+    text: "Esta acción no se puede deshacer",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar"
+  });
+
+  if (confirmacion.isConfirmed) {
     try {
       await fetch(`${API_URL}/${id}`, { method: 'delete' });
       obtenerClientes();
+
+      Swal.fire({
+        position: "top-end",
+        icon: "success",
+        title: "Cliente eliminado correctamente",
+        showConfirmButton: false,
+        timer: 1500
+      });
     } catch (error) {
       console.error('Error al eliminar cliente:', error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo eliminar el cliente."
+      });
     }
   }
 }
 
-// Guardar / actualizar cliente
+// === GUARDAR / ACTUALIZAR CLIENTE ===
 formulario.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -87,28 +113,56 @@ formulario.addEventListener('submit', async (e) => {
   const url = id ? `${API_URL}/${id}` : API_URL;
 
   try {
-    await fetch(url, {
+    const response = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
+
+    if (!response.ok) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo guardar el cliente. Verifique los datos.",
+      });
+      return;
+    }
+
     formulario.reset();
     idcliente.value = '';
     btnGuardar.innerText = 'Registrar';
     obtenerClientes();
+
+    // ✅ Éxito visual (toast elegante)
+    Swal.fire({
+      position: "top-end",
+      icon: "success",
+      title: id ? "Cliente actualizado correctamente" : "Cliente registrado correctamente",
+      showConfirmButton: false,
+      timer: 1500
+    });
+
   } catch (error) {
     console.error('Error al guardar cliente:', error);
+    Swal.fire({
+      icon: "error",
+      title: "Error de conexión",
+      text: "No se pudo conectar con el servidor.",
+      footer: "Verifique que el servidor esté en ejecución"
+    });
   }
 });
 
+// === BUSCADOR EN TIEMPO REAL ===
 inputBuscar.addEventListener('input', () => {
   const texto = inputBuscar.value.toLowerCase();
   const filas = tablaClientes.getElementsByTagName('tr');
 
   for (let fila of filas) {
-    const nombre = fila.cells[1].textContent.toLowerCase(); // suponiendo que el nombre está en la 2da columna
+    const nombre = fila.cells[1].textContent.toLowerCase(); // nombre en 2da columna
     fila.style.display = nombre.includes(texto) ? '' : 'none';
   }
 });
 
+// === CARGAR CLIENTES AL INICIAR ===
 document.addEventListener('DOMContentLoaded', obtenerClientes);

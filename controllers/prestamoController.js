@@ -1,37 +1,48 @@
 const db = require('../config/db')
 
 // Crear préstamo con interés
+// Crear préstamo con interés
 exports.crearPrestamo = async (req, res) => {
-  const { clienteId, montoPrestado, fechaPrestamo } = req.body
+  const { clienteId, montoPrestado, fechaPrestamo } = req.body;
 
-  // Validación básica
   if (!clienteId || !montoPrestado || !fechaPrestamo) {
-    return res.status(400).json({ mensaje: 'Faltan datos obligatorios' })
+    return res.status(400).json({ mensaje: 'Faltan datos obligatorios' });
   }
 
   try {
-    const interes = 10 // 10%
+    // 🔍 Verificar si el cliente tiene préstamos pendientes
+    const [pendientes] = await db.query(
+      'SELECT * FROM prestamos WHERE clienteId = ? AND saldoPendiente > 0',
+      [clienteId]
+    );
 
-    // Calcula saldo pendiente con interés
-    const saldoPendiente = montoPrestado + (montoPrestado * interes / 100)
+    if (pendientes.length > 0) {
+      return res.status(400).json({
+        mensaje: 'El cliente aún tiene préstamos pendientes. No puede solicitar uno nuevo hasta pagarlos todos.',
+      });
+    }
 
-    // Inserta préstamo
+    // Si no tiene deudas, se crea el préstamo
+    const interes = 10; // 10%
+    const saldoPendiente = montoPrestado + (montoPrestado * interes / 100);
+
     const sql = `
       INSERT INTO prestamos (clienteId, montoPrestado, saldoPendiente, fechaPrestamo)
       VALUES (?, ?, ?, ?)
-    `
-    const [result] = await db.query(sql, [clienteId, montoPrestado, saldoPendiente, fechaPrestamo])
+    `;
+    const [result] = await db.query(sql, [clienteId, montoPrestado, saldoPendiente, fechaPrestamo]);
 
     res.status(201).json({
       id: result.insertId,
       mensaje: `Préstamo registrado con ${interes}% de interés`,
-      saldoPendiente
-    })
+      saldoPendiente,
+    });
   } catch (e) {
-    console.error(e)
-    res.status(500).json({ mensaje: 'Error al registrar préstamo' })
+    console.error(e);
+    res.status(500).json({ mensaje: 'Error al registrar préstamo' });
   }
-}
+};
+
 
 // Actualizar préstamo
 exports.actualizarPrestamo = async (req, res) => {
