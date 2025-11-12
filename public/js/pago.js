@@ -127,6 +127,7 @@ selectPrestamo.addEventListener('change', () => {
 
 /* Mostrar tabla de pagos */
 /* Mostrar tabla de pagos */
+// Mostrar tabla de pagos
 async function obtenerPagos() {
   try {
     const res = await fetch(API_PAGOS);
@@ -139,14 +140,11 @@ async function obtenerPagos() {
       row.insertCell().textContent = p.id;
       row.insertCell().textContent = p.cliente;
 
-      // buscar préstamo para calcular total con interés
       const prestamoRelacionado = prestamosGlobales.find(pr => String(pr.id) === String(p.prestamoId));
       let totalConInteres = parseFloat(p.montoPrestado) || 0;
-      if (prestamoRelacionado) {
-        totalConInteres = calcularTotalConInteres(prestamoRelacionado);
-      }
+      if (prestamoRelacionado) totalConInteres = calcularTotalConInteres(prestamoRelacionado);
 
-      row.insertCell().textContent = totalConInteres.toFixed(2); // monto con interés incluido
+      row.insertCell().textContent = totalConInteres.toFixed(2);
       row.insertCell().textContent = p.montoPagado;
       row.insertCell().textContent = (p.fechaPago || '').split('T')[0] || '';
       row.insertCell().textContent = p.metodoPago || '';
@@ -162,24 +160,12 @@ async function obtenerPagos() {
         pdfCell.textContent = '-';
       }
 
-      const actions = row.insertCell();
-      const editBtn = document.createElement('button');
-      editBtn.textContent = 'Editar';
-      editBtn.className = 'btn btn-info btn-sm me-1';
-      editBtn.onclick = () => cargarParaEdicion(p);
-
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent = 'Eliminar';
-      deleteBtn.className = 'btn btn-danger btn-sm';
-      deleteBtn.onclick = () => eliminarPago(p.id, p.cliente);
-
-      actions.appendChild(editBtn);
-      actions.appendChild(deleteBtn);
     });
   } catch (err) {
     console.error('obtenerPagos error:', err);
   }
 }
+
 
 
 /* cargar en edición */
