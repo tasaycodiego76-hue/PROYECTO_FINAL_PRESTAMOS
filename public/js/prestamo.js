@@ -75,6 +75,9 @@ btnHistorial.addEventListener('click', async () => {
 
     if (historial.length === 0) {
       historialContent.innerHTML = `<p class="text-muted">Este cliente no tiene préstamos registrados.</p>`;
+      
+      // Deslizar automáticamente al historial
+      historialContainer.scrollIntoView({ behavior: "smooth" });
       return;
     }
 
@@ -93,10 +96,15 @@ btnHistorial.addEventListener('click', async () => {
       `;
       historialContent.innerHTML += item;
     });
+
+    // Deslizar automáticamente cuando se muestre el historial
+    historialContainer.scrollIntoView({ behavior: "smooth" });
+
   } catch (e) {
     console.error("Error al cargar historial:", e);
   }
 });
+
 
 // Cargar clientes
 async function cargarClientes() {
