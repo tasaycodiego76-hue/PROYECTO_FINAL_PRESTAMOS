@@ -49,22 +49,28 @@ async function cargarPrestamos() {
     selectPrestamo.innerHTML = '<option value="">Seleccione...</option>';
 
     prestamosGlobales.forEach(p => {
+      // Calcula total con interés (si el objeto tiene interesPorcentaje)
       const totalConInteres = calcularTotalConInteres(p);
+
+      // Si el backend mantiene saldoPendiente en la tabla prestamos, úsalo.
+      // Si no existe, calculamos restando montoPagadoTotal (si viene)
       const saldoBackend = (p.saldoPendiente !== undefined && p.saldoPendiente !== null)
         ? parseFloat(p.saldoPendiente)
         : (totalConInteres - (parseFloat(p.montoPagadoTotal) || 0));
 
-// Mostrar todos los préstamos, incluso de clientes inactivos
-const opt = document.createElement('option');
-opt.value = p.id;
-opt.textContent = `${p.cliente}${p.estado === 'inactivo' ? ' (Inactivo)' : ''}`;
-selectPrestamo.appendChild(opt);
-
+      // Solo agregar si tiene saldo pendiente (mayor a 0)
+      if (saldoBackend > 0.001) {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `${p.cliente}${p.estado === 'inactivo' ? ' (Inactivo)' : ''}`;
+        selectPrestamo.appendChild(opt);
+      }
     });
   } catch (err) {
     console.error('cargarPrestamos error:', err);
   }
 }
+
 
 async function obtenerPagosPorPrestamo(prestamoId) {
   try {
