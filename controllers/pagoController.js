@@ -46,7 +46,6 @@ exports.crearPago = [
 ];
 
 // Listar pagos - INCLUYE PAGOS DE CLIENTES INACTIVOS + estado del cliente
-// controllers/pagosController.js (o donde esté)
 exports.obtenerPagos = async (req, res) => {
   try {
     const sql = `
