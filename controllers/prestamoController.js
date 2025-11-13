@@ -11,7 +11,7 @@ exports.crearPrestamo = async (req, res) => {
   try {
     // Verificar si tiene préstamos pendientes
     const [pendientes] = await db.query(
-      'SELECT * FROM prestamos WHERE clienteId = ? AND saldoPendiente > 0',
+      "SELECT * FROM prestamos WHERE clienteId = ? AND saldoPendiente > 0 AND estado = 'activo'",
       [clienteId]
     );
 
@@ -21,8 +21,8 @@ exports.crearPrestamo = async (req, res) => {
       });
     }
 
-    const sql = `INSERT INTO prestamos (clienteId, montoPrestado, interesPorcentaje, saldoPendiente, fechaPrestamo) 
-                 VALUES (?, ?, ?, ?, ?)`;
+    const sql = `INSERT INTO prestamos (clienteId, montoPrestado, interesPorcentaje, saldoPendiente, fechaPrestamo, estado) 
+                 VALUES (?, ?, ?, ?, ?, 'activo')`;
     
     const [result] = await db.query(sql, [
       clienteId, 
@@ -63,29 +63,20 @@ exports.actualizarPrestamo = async (req, res) => {
   }
 };
 
-// Listar préstamos
+// Listar préstamos - SOLO DE CLIENTES ACTIVOS
 exports.obtenerPrestamos = async (req, res) => {
   try {
-    const sql = `SELECT p.*, c.nombre AS cliente 
-                 FROM prestamos p 
-                 LEFT JOIN clientes c ON p.clienteId = c.id
-                 ORDER BY p.id DESC`;
+    const sql = `
+      SELECT p.*, c.nombre AS cliente 
+      FROM prestamos p 
+      LEFT JOIN clientes c ON p.clienteId = c.id
+      WHERE c.estado = 'activo' AND p.estado = 'activo'
+      ORDER BY p.id DESC
+    `;
     const [prestamos] = await db.query(sql);
     res.status(200).json(prestamos);
   } catch (e) {
     console.error(e);
     res.status(500).json({ mensaje: 'Error al obtener los préstamos' });
-  }
-};
-
-// Eliminar préstamo
-exports.eliminarPrestamo = async (req, res) => {
-  const { id } = req.params;
-  try {
-    await db.query('DELETE FROM prestamos WHERE id = ?', [id]);
-    res.status(200).json({ mensaje: 'Préstamo eliminado' });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ mensaje: 'Error al eliminar préstamo' });
   }
 };

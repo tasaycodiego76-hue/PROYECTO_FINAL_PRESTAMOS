@@ -1,4 +1,3 @@
-/* js/pago.js - versión corregida para comportamiento solicitado */
 const API_PAGOS = 'http://localhost:3000/api/pagos';
 const API_PRESTAMOS = 'http://localhost:3000/api/prestamos';
 
@@ -16,12 +15,10 @@ const saldoPendiente = document.getElementById('saldoPendiente');
 
 let prestamosGlobales = [];
 
-/* estilo y readonly */
 saldoPendiente.readOnly = true;
 saldoPendiente.style.backgroundColor = '#f0f0f0';
 saldoPendiente.style.fontWeight = 'bold';
 
-/* cancelar */
 btnCancelar.addEventListener('click', () => {
   formulario.reset();
   idpago.value = '';
@@ -29,24 +26,20 @@ btnCancelar.addEventListener('click', () => {
   btnGuardar.innerText = 'Guardar';
 });
 
-/* helper: calcula total (capital + interés). Maneja dos posibles esquemas:
-   - si existe interesPorcentaje (ej: 10) calcula monto + monto * interesPorcentaje/100
-   - si existe interes (valor absoluto) suma directo
-*/
 function calcularTotalConInteres(prestamo) {
   const monto = parseFloat(prestamo.montoPrestado) || 0;
-  if (prestamo.interesPorcentaje != null && prestamo.interesPorcentaje !== undefined) {
+
+  // Si viene porcentaje (propiedad interesPorcentaje) úsalo
+  if (prestamo.interesPorcentaje !== undefined && prestamo.interesPorcentaje !== null) {
     const pct = parseFloat(prestamo.interesPorcentaje) || 0;
     return monto + (monto * pct / 100);
   }
-  // si hay campo 'interes' absoluto (por compatibilidad)
+
+  // Si vienen intereses como monto absoluto
   const interesAbs = parseFloat(prestamo.interes) || 0;
   return monto + interesAbs;
 }
 
-/* Carga prestamos pero SOLO los que tengan saldo pendiente > 0.
-   En la lista solo muestra el nombre (sin montos).
-*/
 async function cargarPrestamos() {
   try {
     const res = await fetch(API_PRESTAMOS);
@@ -55,28 +48,24 @@ async function cargarPrestamos() {
 
     selectPrestamo.innerHTML = '<option value="">Seleccione...</option>';
 
-    // filtramos locales calculando saldo real por cada préstamo
     prestamosGlobales.forEach(p => {
       const totalConInteres = calcularTotalConInteres(p);
-      // p.montoPagadoTotal puede no existir en tu API; calculamos después con pagos si hace falta.
-      // Para decisión rápida, asumimos p.saldoPendiente si existe en backend (si no, lo consideramos total - 0)
       const saldoBackend = (p.saldoPendiente !== undefined && p.saldoPendiente !== null)
         ? parseFloat(p.saldoPendiente)
         : (totalConInteres - (parseFloat(p.montoPagadoTotal) || 0));
 
-      if (saldoBackend > 0.001) {
-        const opt = document.createElement('option');
-        opt.value = p.id;
-        opt.textContent = p.cliente; // SOLO nombre
-        selectPrestamo.appendChild(opt);
-      }
+// Mostrar todos los préstamos, incluso de clientes inactivos
+const opt = document.createElement('option');
+opt.value = p.id;
+opt.textContent = `${p.cliente}${p.estado === 'inactivo' ? ' (Inactivo)' : ''}`;
+selectPrestamo.appendChild(opt);
+
     });
   } catch (err) {
     console.error('cargarPrestamos error:', err);
   }
 }
 
-/* obtiene todos los pagos y filtra por prestamoId */
 async function obtenerPagosPorPrestamo(prestamoId) {
   try {
     const res = await fetch(API_PAGOS);
@@ -89,17 +78,14 @@ async function obtenerPagosPorPrestamo(prestamoId) {
   }
 }
 
-/* Actualiza el campo saldoPendiente mostrando (capital + interés - sumPagos) */
 async function actualizarSaldoPendiente(prestamoId) {
   if (!prestamoId) {
     saldoPendiente.value = '';
     return;
   }
 
-  // buscar préstamo en memoria
   const prestamo = prestamosGlobales.find(p => String(p.id) === String(prestamoId));
   if (!prestamo) {
-    // intenta recargar globales si no está
     await cargarPrestamos();
     const p2 = prestamosGlobales.find(p => String(p.id) === String(prestamoId));
     if (!p2) {
@@ -117,17 +103,13 @@ async function actualizarSaldoPendiente(prestamoId) {
   const saldoReal = totalConInteres - totalPagado;
 
   saldoPendiente.value = (saldoReal > 0 ? saldoReal : 0).toFixed(2);
-  // NO mostramos alerta aquí (según tu pedido): la alerta solo cuando se registre el pago final
 }
 
-/* Al cambiar selección solo actualizamos saldo (sin alertas) */
 selectPrestamo.addEventListener('change', () => {
   actualizarSaldoPendiente(selectPrestamo.value);
 });
 
-/* Mostrar tabla de pagos */
-/* Mostrar tabla de pagos */
-// Mostrar tabla de pagos
+// Mostrar tabla de pagos CON ESTADO DEL CLIENTE
 async function obtenerPagos() {
   try {
     const res = await fetch(API_PAGOS);
@@ -138,11 +120,23 @@ async function obtenerPagos() {
     pagos.forEach(p => {
       const row = tabla.insertRow();
       row.insertCell().textContent = p.id;
+      
+      // Cliente (sin badge)
       row.insertCell().textContent = p.cliente;
 
+      // Estado en columna separada
+      const estadoCell = row.insertCell();
+      if (p.estadoCliente === 'activo') {
+        estadoCell.innerHTML = '<span class="badge bg-success">Activo</span>';
+      } else {
+        estadoCell.innerHTML = '<span class="badge bg-secondary">Inactivo</span>';
+        row.style.backgroundColor = '#f8f9fa';
+      }
+
       const prestamoRelacionado = prestamosGlobales.find(pr => String(pr.id) === String(p.prestamoId));
-      let totalConInteres = parseFloat(p.montoPrestado) || 0;
-      if (prestamoRelacionado) totalConInteres = calcularTotalConInteres(prestamoRelacionado);
+      // Siempre calcula el interés directamente con los datos del pago
+       let totalConInteres = calcularTotalConInteres(p);
+
 
       row.insertCell().textContent = totalConInteres.toFixed(2);
       row.insertCell().textContent = p.montoPagado;
@@ -159,13 +153,11 @@ async function obtenerPagos() {
       } else {
         pdfCell.textContent = '-';
       }
-
     });
   } catch (err) {
     console.error('obtenerPagos error:', err);
   }
 }
-
 
 formulario.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -193,38 +185,31 @@ formulario.addEventListener('submit', async (e) => {
       throw new Error(txt || 'Error guardando pago');
     }
 
-    // recalculamos saldo después del POST
-    // recargamos prestamos y pagos para tener datos frescos
     await obtenerPagos();
     await cargarPrestamos();
 
-    // obtener préstamo fresco (desde prestamosGlobales recargadas)
     const prestamo = prestamosGlobales.find(p => String(p.id) === String(prestamoId));
     const pagos = await obtenerPagosPorPrestamo(prestamoId);
     const totalPagado = pagos.reduce((acc, it) => acc + (parseFloat(it.montoPagado) || 0), 0);
     const totalConInteres = calcularTotalConInteres(prestamo);
     const saldoReal = totalConInteres - totalPagado;
 
-    // Mensaje final: si saldoReal <= 0 -> mostrar mensaje especial
     if (saldoReal <= 0.001) {
       await Swal.fire({
         title: "¡Préstamo cancelado! Este cliente ya completó todos sus pagos",
         icon: "success",
         draggable: true
       });
-      // actualizar lista (ya recargada) — el cliente ya no aparecerá
       await cargarPrestamos();
       selectPrestamo.value = '';
       saldoPendiente.value = '';
     } else {
-      // pago normal
       await Swal.fire({
         title: "Pago registrado correctamente",
         icon: "success",
         timer: 1300,
         showConfirmButton: false
       });
-      // actualizar saldo visible
       saldoPendiente.value = saldoReal.toFixed(2);
     }
 
@@ -237,7 +222,6 @@ formulario.addEventListener('submit', async (e) => {
   }
 });
 
-/* Init */
 document.addEventListener('DOMContentLoaded', async () => {
   await cargarPrestamos();
   await obtenerPagos();
