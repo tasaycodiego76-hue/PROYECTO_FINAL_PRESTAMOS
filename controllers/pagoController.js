@@ -48,14 +48,16 @@ exports.crearPago = [
 // Listar pagos con PDF
 exports.obtenerPagos = async (req, res) => {
   try {
-    const sql = `
-      SELECT 
-        pa.*, 
-        (SELECT nombre FROM clientes WHERE id = (SELECT clienteId FROM prestamos WHERE id = pa.prestamoId)) AS cliente,
-        (SELECT montoPrestado FROM prestamos WHERE id = pa.prestamoId) AS montoPrestado
-      FROM pagos pa
-      ORDER BY pa.id DESC
-    `;
+const sql = `
+  SELECT 
+    pa.*, 
+    c.nombre AS cliente,
+    pr.montoPrestado
+  FROM pagos pa
+  INNER JOIN prestamos pr ON pa.prestamoId = pr.id
+  INNER JOIN clientes c ON pr.clienteId = c.id
+  ORDER BY pa.id DESC
+`;
     const [pagos] = await db.query(sql);
     res.status(200).json(pagos);
   } catch (e) {

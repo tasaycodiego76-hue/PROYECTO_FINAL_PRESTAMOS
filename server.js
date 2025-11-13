@@ -1,7 +1,6 @@
 const express = require('express')
 const cors = require('cors')
 const path = require('path')
-const fs = require('fs').promises
 
 // Rutas
 const clienteRoutes = require('./routes/clienteRoutes')
@@ -19,10 +18,6 @@ app.use(cors({
 }))
 // Servir carpeta uploads de forma pública
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-
-
-
 
 // Middleware
 app.use(express.json())

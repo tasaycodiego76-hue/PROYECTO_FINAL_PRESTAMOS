@@ -167,38 +167,6 @@ async function obtenerPagos() {
 }
 
 
-
-/* cargar en edición */
-function cargarParaEdicion(p) {
-  idpago.value = p.id;
-  selectPrestamo.value = p.prestamoId;
-  montoPago.value = p.montoPagado;
-  fechaPago.value = (p.fechaPago || '').split('T')[0] || '';
-  metodoPago.value = p.metodoPago || '';
-  btnGuardar.innerText = 'Actualizar';
-  actualizarSaldoPendiente(p.prestamoId);
-}
-
-/* eliminar pago */
-async function eliminarPago(id, cliente) {
-  if (!confirm(`¿Seguro que desea eliminar el pago de ${cliente}?`)) return;
-  try {
-    const res = await fetch(`${API_PAGOS}/${id}`, { method: 'DELETE' });
-    if (!res.ok) throw new Error('Error al eliminar');
-    await obtenerPagos();
-    await cargarPrestamos();
-    if (selectPrestamo.value) await actualizarSaldoPendiente(selectPrestamo.value);
-  } catch (err) {
-    console.error('eliminarPago error:', err);
-    Swal.fire({ title: 'Error al eliminar', icon: 'error' });
-  }
-}
-
-/* Guardar / actualizar pago.
-   IMPORTANTE: después de guardar calculamos el nuevo saldo y si queda <= 0
-   mostramos **solo en este momento** el mensaje de préstamo completado y eliminamos
-   al cliente de la lista (con cargarPrestamos()).
-*/
 formulario.addEventListener('submit', async (e) => {
   e.preventDefault();
   const prestamoId = selectPrestamo.value;

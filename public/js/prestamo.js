@@ -149,13 +149,8 @@ async function obtenerPrestamos() {
     editButton.classList.add('btn', 'btn-info', 'btn-sm', 'me-1');
     editButton.onclick = () => cargarParaEdicion(p);
 
-    const deleteButton = document.createElement('button');
-    deleteButton.textContent = 'Eliminar';
-    deleteButton.classList.add('btn', 'btn-danger', 'btn-sm');
-    deleteButton.onclick = () => eliminarPrestamo(p.id, p.cliente);
-
     actionCell.appendChild(editButton);
-    actionCell.appendChild(deleteButton);
+   
   });
 }
 
@@ -170,25 +165,6 @@ function cargarParaEdicion(p) {
   calcularTotal();
 }
 
-// Eliminar préstamo
-async function eliminarPrestamo(id, cliente) {
-  const result = await Swal.fire({
-    title: '¿Estás seguro?',
-    text: `Se eliminará el préstamo de ${cliente}`,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Sí, eliminar',
-    cancelButtonText: 'Cancelar'
-  });
-
-  if (result.isConfirmed) {
-    await fetch(`${API_PRESTAMOS}/${id}`, { method: 'DELETE' });
-    Swal.fire('Eliminado', 'Préstamo eliminado correctamente', 'success');
-    obtenerPrestamos();
-  }
-}
 
 // Registrar o actualizar préstamo
 formulario.addEventListener('submit', async (event) => {
