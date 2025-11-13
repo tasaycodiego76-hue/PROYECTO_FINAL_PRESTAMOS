@@ -42,6 +42,7 @@ CREATE TABLE pagos (
     FOREIGN KEY (prestamoId) REFERENCES prestamos(id)
 );
 
+
 ```
 
 3. 📋 Abrir proyecto _electroperu_ en VSCode
